@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import httpx
 import os
@@ -95,6 +95,28 @@ async def get_product(product_id: int):
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{PRODUCTS_SERVICE_URL}/products/{product_id}")
         return JSONResponse(content=response.json(), status_code=response.status_code)
+
+# SOAP/XML ENDPOINTS
+@app.post("/products/soap/create", tags=["SOAP"])
+async def create_product_soap(product: ProductCreate):
+    """Crear producto - retorna XML"""
+    async with httpx.AsyncClient() as client:
+        r = await client.post(f"{PRODUCTS_SERVICE_URL}/soap/product", json=product.dict())
+        return Response(content=r.content, status_code=r.status_code, media_type='text/xml')
+
+@app.get("/products/soap/list", tags=["SOAP"])
+async def list_products_soap():
+    """Listar todos los productos - retorna XML SOAP"""
+    async with httpx.AsyncClient() as client:
+        r = await client.get(f"{PRODUCTS_SERVICE_URL}/soap/products")
+        return Response(content=r.content, status_code=r.status_code, media_type='text/xml')
+
+@app.get("/products/soap/{product_id}", tags=["SOAP"])
+async def get_product_soap(product_id: int):
+    """Obtener producto - retorna XML"""
+    async with httpx.AsyncClient() as client:
+        r = await client.get(f"{PRODUCTS_SERVICE_URL}/soap/product/{product_id}")
+        return Response(content=r.content, status_code=r.status_code, media_type='text/xml')
 
 # CUSTOMERS SERVICE 
 
